@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">CryptoTracker</string>
+
+    <!-- Menu -->
+    <string name="action_search">Pesquisar</string>
+    <string name="action_favorites">Favoritos</string>
+    <string name="action_refresh">Atualizar</string>
+
+    <!-- Main Activity -->
+    <string name="loading_cryptocurrencies">Carregando criptomoedas...</string>
+    <string name="error_loading_data">Erro ao carregar dados</string>
+
+    <!-- Detail Activity -->
+    <string name="high_24h">Alta 24h</string>
+    <string name="low_24h">Baixa 24h</string>
+    <string name="market_cap">Market Cap</string>
+    <string name="ranking">Ranking</string>
+
+    <!-- Favorites -->
+    <string name="favorites_title">Favoritos</string>
+    <string name="no_favorites">Nenhuma criptomoeda favorita</string>
+    <string name="price_format">R$ %.4f</string>
+</resources>
