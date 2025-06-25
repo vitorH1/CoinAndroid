@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
 
         // Adapter agora recebe o callback de clique
         cryptoAdapter = CryptoAdapter(emptyList()) { crypto ->
-            val intent = Intent(this, com.vitor.cryptotracker.ui.main.DetailActivity::class.java)
+            val intent = Intent(this, com.vitor.cryptotracker.ui.detail.DetailActivity::class.java)
             intent.putExtra("coin_id", crypto.id)
             intent.putExtra("coin_name", crypto.name)
             startActivity(intent)

@@ -44,6 +44,12 @@ android {
 }
 
 dependencies {
+    implementation("com.google.android.material:material:1.8.0")
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation("com.facebook.shimmer:shimmer:0.5.0")
+    implementation("io.coil-kt:coil:2.2.2")
+    implementation("com.airbnb.android:lottie:5.2.0")
+
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
@@ -87,4 +93,5 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.cardview:cardview:1.0.0")
     kapt("com.github.bumptech.glide:compiler:4.16.0")
+
 }
