@@ -185,7 +185,7 @@ class DetailActivity : AppCompatActivity() {
                 gridColor = ContextCompat.getColor(this@DetailActivity, R.color.surface)
                 setDrawAxisLine(false)
 
-                // ******** A CORREÇÃO ESTÁ AQUI ********
+                // ******** A CORREÇÃO ESTÁ AQUI *********
                 valueFormatter = object : ValueFormatter() {
                     // O método correto é 'getFormattedValue' e ele só precisa do 'value'
                     override fun getFormattedValue(value: Float): String {
