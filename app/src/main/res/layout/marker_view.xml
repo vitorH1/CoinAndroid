@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:background="@drawable/marker_bg"
+    android:background="@drawable/bg_marker"
+    android:orientation="vertical"
     android:padding="8dp">
 
     <TextView
         android:id="@+id/tvPrice"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="R$ 0,00"
-        android:textColor="@android:color/black"
-        android:textStyle="bold"
-        android:textSize="16sp"/>
+        android:textColor="@color/on_primary"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
     <TextView
         android:id="@+id/tvDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="dd/MM"
-        android:textColor="#7B7B7B"
-        android:textSize="12sp"/>
+        android:layout_marginTop="2dp"
+        android:textColor="@color/on_primary"
+        android:textSize="12sp" />
+
 </LinearLayout>

@@ -9,7 +9,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
-import com.github.mikephil.charting.components.AxisBase
+import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
@@ -40,7 +40,11 @@ class DetailActivity : AppCompatActivity() {
         binding = ActivityDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // JEITO MODERNO E SEGURO de pegar o objeto Parcelable do Intent
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        binding.toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
+
+
         coin = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getParcelableExtra(EXTRA_COIN, CoinInfoContainer::class.java)
         } else {
@@ -59,29 +63,30 @@ class DetailActivity : AppCompatActivity() {
         setupChartPeriodSelector()
         setupObservers()
 
-        // Busca inicial do gráfico para 30 dias
-        fetchChartData(30)
+        binding.toggleGroupPeriod.check(R.id.btn30d)
     }
 
     private fun setupUI() {
         coin?.let {
-            binding.tvDetailCoinName.text = "${it.coinInfo.fullName} (${it.coinInfo.name})"
+            supportActionBar?.title = "${it.coinInfo.fullName} (${it.coinInfo.name})"
             binding.tvDetailPrice.text = it.display.usd.price
-            Glide.with(this)
-                .load(Constants.IMAGE_BASE_URL + it.coinInfo.imageUrl)
-                .into(binding.ivDetailCoinIcon)
+            binding.tvMarketCap.text = "Capitalização de Mercado: ${it.display.usd.marketCap}"
+            binding.tvVolume24h.text = "Volume (24h): ${it.display.usd.totalVolume24h}"
+            binding.tvSupply.text = "Fornecimento em Circulação: ${it.display.usd.supply}"
         }
     }
 
     private fun setupChartPeriodSelector() {
-        binding.radioGroupPeriod.setOnCheckedChangeListener { _, checkedId ->
-            val days = when (checkedId) {
-                R.id.radio7d -> 7
-                R.id.radio30d -> 30
-                R.id.radio90d -> 90
-                else -> 30
+        binding.toggleGroupPeriod.addOnButtonCheckedListener { group, checkedId, isChecked ->
+            if (isChecked) {
+                val days = when (checkedId) {
+                    R.id.btn7d -> 7
+                    R.id.btn30d -> 30
+                    R.id.btn90d -> 90
+                    else -> 30
+                }
+                fetchChartData(days)
             }
-            fetchChartData(days)
         }
     }
 
@@ -101,7 +106,10 @@ class DetailActivity : AppCompatActivity() {
                 is Resource.Success -> {
                     binding.detailProgressBar.visibility = View.GONE
                     binding.lineChart.visibility = View.VISIBLE
-                    resource.data?.let { setupChart(it) }
+                    resource.data?.let {
+                        setupChart(it)
+                        binding.lineChart.marker = ChartMarkerView(this, it)
+                    }
                 }
                 is Resource.Error -> {
                     binding.detailProgressBar.visibility = View.GONE
@@ -116,9 +124,9 @@ class DetailActivity : AppCompatActivity() {
             Entry(index.toFloat(), data.close)
         }
 
-        val dataSet = LineDataSet(entries, "Preço de Fechamento (USD)").apply {
-            color = ContextCompat.getColor(this@DetailActivity, R.color.purple_500)
-            valueTextColor = Color.BLACK
+        val dataSet = LineDataSet(entries, "").apply {
+            color = ContextCompat.getColor(this@DetailActivity, R.color.primary)
+            valueTextColor = Color.TRANSPARENT
             setDrawCircles(false)
             setDrawValues(false)
             mode = LineDataSet.Mode.CUBIC_BEZIER
@@ -132,25 +140,39 @@ class DetailActivity : AppCompatActivity() {
             description.isEnabled = false
             legend.isEnabled = false
             axisRight.isEnabled = false
+            setTouchEnabled(true)
+            isDragEnabled = true
+            setScaleEnabled(true)
+            setPinchZoom(true)
 
-            axisLeft.textColor = Color.GRAY
-            axisLeft.gridColor = Color.parseColor("#E0E0E0")
+            axisLeft.apply {
+                textColor = ContextCompat.getColor(this@DetailActivity, R.color.on_surface_variant)
+                gridColor = ContextCompat.getColor(this@DetailActivity, R.color.surface)
+                setDrawAxisLine(false)
+            }
 
-            // CORREÇÃO DO VALUE FORMATTER
-            xAxis.valueFormatter = object : ValueFormatter() {
-                override fun getAxisLabel(value: Float, axis: AxisBase?): String {
-                    val index = value.toInt()
-                    return if (index >= 0 && index < ohlcData.size) {
-                        val timestamp = ohlcData[index].time * 1000L
-                        val sdf = SimpleDateFormat("dd/MM", Locale.getDefault())
-                        sdf.format(Date(timestamp))
-                    } else {
-                        ""
+            xAxis.apply {
+                position = XAxis.XAxisPosition.BOTTOM
+                textColor = ContextCompat.getColor(this@DetailActivity, R.color.on_surface_variant)
+                gridColor = ContextCompat.getColor(this@DetailActivity, R.color.surface)
+                setDrawAxisLine(false)
+
+                // ******** A CORREÇÃO ESTÁ AQUI ********
+                valueFormatter = object : ValueFormatter() {
+                    // O método correto é 'getFormattedValue' e ele só precisa do 'value'
+                    override fun getFormattedValue(value: Float): String {
+                        val index = value.toInt()
+                        return if (index >= 0 && index < ohlcData.size) {
+                            val timestamp = ohlcData[index].time * 1000L
+                            val sdf = SimpleDateFormat("dd/MM", Locale.getDefault())
+                            sdf.format(Date(timestamp))
+                        } else {
+                            ""
+                        }
                     }
                 }
             }
-            xAxis.textColor = Color.GRAY
-            xAxis.gridColor = Color.parseColor("#E0E0E0")
+            animateX(1000)
             invalidate()
         }
     }

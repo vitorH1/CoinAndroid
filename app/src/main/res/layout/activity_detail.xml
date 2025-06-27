@@ -1,93 +1,122 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
+    android:background="@color/background"
     tools:context=".ui.detail.DetailActivity">
 
-    <ImageView
-        android:id="@+id/ivDetailCoinIcon"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:src="@tools:sample/avatars" />
-
-    <TextView
-        android:id="@+id/tvDetailCoinName"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:textColor="@android:color/black"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/ivDetailCoinIcon"
-        app:layout_constraintTop_toTopOf="@id/ivDetailCoinIcon"
-        tools:text="Bitcoin (BTC)" />
-
-    <TextView
-        android:id="@+id/tvDetailPrice"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:textColor="@android:color/black"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@id/tvDetailCoinName"
-        app:layout_constraintTop_toBottomOf="@id/tvDetailCoinName"
-        tools:text="$68,123.45" />
-
-    <RadioGroup
-        android:id="@+id/radioGroupPeriod"
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:gravity="center"
-        android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/ivDetailCoinIcon">
+        android:background="@color/surface">
 
-        <RadioButton
-            android:id="@+id/radio7d"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="7D" />
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:navigationIcon="@drawable/ic_arrow_back"
+            app:titleTextColor="@color/on_surface" />
 
-        <RadioButton
-            android:id="@+id/radio30d"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:checked="true"
-            android:text="30D" />
+    </com.google.android.material.appbar.AppBarLayout>
 
-        <RadioButton
-            android:id="@+id/radio90d"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="90D" />
-
-    </RadioGroup>
-
-    <com.github.mikephil.charting.charts.LineChart
-        android:id="@+id/lineChart"
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/radioGroupPeriod" />
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <ProgressBar
-        android:id="@+id/detailProgressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/lineChart"
-        app:layout_constraintEnd_toEndOf="@id/lineChart"
-        app:layout_constraintStart_toStartOf="@id/lineChart"
-        app:layout_constraintTop_toTopOf="@id/lineChart"
-        tools:visibility="visible" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/surface"
+                app:cardCornerRadius="16dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tvDetailPrice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/on_surface"
+                        android:textSize="32sp"
+                        android:textStyle="bold"
+                        tools:text="$68,123.45" />
+
+                    <com.google.android.material.button.MaterialButtonToggleGroup
+                        android:id="@+id/toggleGroupPeriod"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        app:singleSelection="true"
+                        app:selectionRequired="true">
+                        <Button style="?attr/materialButtonOutlinedStyle" android:id="@+id/btn7d" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="7D"/>
+                        <Button style="?attr/materialButtonOutlinedStyle" android:id="@+id/btn30d" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="30D"/>
+                        <Button style="?attr/materialButtonOutlinedStyle" android:id="@+id/btn90d" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="90D"/>
+                    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                    <com.github.mikephil.charting.charts.LineChart
+                        android:id="@+id/lineChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="250dp"
+                        android:layout_marginTop="8dp" />
+
+                    <ProgressBar
+                        android:id="@+id/detailProgressBar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Estatísticas"
+                android:textColor="@color/on_surface"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:layout_marginTop="24dp"/>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:cardBackgroundColor="@color/surface"
+                app:cardCornerRadius="16dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView android:id="@+id/tvMarketCap" android:layout_width="match_parent" android:layout_height="wrap_content" tools:text="Capitalização de Mercado: $1.3T" android:textColor="@color/on_surface_variant"/>
+                    <TextView android:id="@+id/tvVolume24h" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" tools:text="Volume (24h): $25.5B" android:textColor="@color/on_surface_variant"/>
+                    <TextView android:id="@+id/tvSupply" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" tools:text="Fornecimento: 19.7M" android:textColor="@color/on_surface_variant"/>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

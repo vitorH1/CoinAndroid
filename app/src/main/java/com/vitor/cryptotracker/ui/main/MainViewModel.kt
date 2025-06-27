@@ -19,6 +19,9 @@ class MainViewModel @Inject constructor(
     private val _cryptocurrencies = MutableLiveData<Resource<List<CoinInfoContainer>>>()
     val cryptocurrencies: LiveData<Resource<List<CoinInfoContainer>>> = _cryptocurrencies
 
+    // Variável para guardar a lista completa e original
+    private var originalCoinList = listOf<CoinInfoContainer>()
+
     init {
         fetchCryptocurrencies()
     }
@@ -26,8 +29,32 @@ class MainViewModel @Inject constructor(
     fun fetchCryptocurrencies() {
         _cryptocurrencies.postValue(Resource.Loading())
         viewModelScope.launch {
-            val result = repository.getTopCoins()
-            _cryptocurrencies.postValue(result)
+            when (val result = repository.getTopCoins()) {
+                is Resource.Success -> {
+                    // Quando o resultado for sucesso, guardamos a lista original
+                    originalCoinList = result.data ?: emptyList()
+                    _cryptocurrencies.postValue(result)
+                }
+                else -> {
+                    _cryptocurrencies.postValue(result)
+                }
+            }
         }
+    }
+
+    // Nova função para pesquisar
+    fun searchCoin(query: String?) {
+        if (query.isNullOrBlank()) {
+            // Se a pesquisa estiver vazia, mostra a lista original
+            _cryptocurrencies.postValue(Resource.Success(originalCoinList))
+            return
+        }
+
+        // Filtra a lista original pelo nome ou símbolo da moeda
+        val filteredList = originalCoinList.filter { coinContainer ->
+            coinContainer.coinInfo.fullName.contains(query, ignoreCase = true) ||
+                    coinContainer.coinInfo.name.contains(query, ignoreCase = true)
+        }
+        _cryptocurrencies.postValue(Resource.Success(filteredList))
     }
 }
