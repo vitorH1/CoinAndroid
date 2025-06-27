@@ -3,13 +3,20 @@ package com.vitor.cryptotracker
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.vitor.cryptotracker.data.models.CoinInfoContainer
 import com.vitor.cryptotracker.databinding.ActivityMainBinding
+import com.vitor.cryptotracker.ui.detail.DetailActivity
 import com.vitor.cryptotracker.ui.main.CryptoAdapter
 import com.vitor.cryptotracker.ui.main.MainViewModel
+import com.vitor.cryptotracker.utils.Resource
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
@@ -21,36 +28,40 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Adapter agora recebe o callback de clique
-        cryptoAdapter = CryptoAdapter(emptyList()) { crypto ->
-            val intent = Intent(this, com.vitor.cryptotracker.ui.detail.DetailActivity::class.java)
-            intent.putExtra("coin_id", crypto.id)
-            intent.putExtra("coin_name", crypto.name)
+        setupRecyclerView()
+        setupObservers()
+    }
+
+    private fun setupRecyclerView() {
+        cryptoAdapter = CryptoAdapter { coin ->
+            // Ação de clique: abrir a DetailActivity passando o objeto da moeda
+            val intent = Intent(this, DetailActivity::class.java).apply {
+                putExtra(DetailActivity.EXTRA_COIN, coin)
+            }
             startActivity(intent)
         }
-        binding.recyclerCryptos.layoutManager = LinearLayoutManager(this)
-        binding.recyclerCryptos.adapter = cryptoAdapter
+        binding.recyclerCryptos.apply {
+            adapter = cryptoAdapter
+            layoutManager = LinearLayoutManager(this@MainActivity)
+        }
+    }
 
-        // Observa os dados da ViewModel
+    private fun setupObservers() {
         viewModel.cryptocurrencies.observe(this) { resource ->
-            when {
-                resource.data != null -> {
-                    cryptoAdapter.updateList(resource.data)
-                    // Mostra no log o nome das moedas
-                    resource.data.forEach {
-                        Log.d("MainActivity", "Moeda: ${it.name} (${it.symbol})")
-                    }
+            when (resource) {
+                is Resource.Loading -> {
+                    binding.mainProgressBar.visibility = View.VISIBLE
                 }
-                resource.message != null -> {
-                    Log.e("MainActivity", "Erro: ${resource.message}")
+                is Resource.Success -> {
+                    binding.mainProgressBar.visibility = View.GONE
+                    cryptoAdapter.differ.submitList(resource.data)
                 }
-                else -> {
-                    Log.d("MainActivity", "Carregando criptomoedas...")
+                is Resource.Error -> {
+                    binding.mainProgressBar.visibility = View.GONE
+                    Toast.makeText(this, "Erro: ${resource.message}", Toast.LENGTH_LONG).show()
+                    Log.e("MainActivity", "Hilt error: ${resource.message}")
                 }
             }
         }
-
-        // Dispara busca das criptomoedas
-        viewModel.fetchCryptocurrencies()
     }
 }

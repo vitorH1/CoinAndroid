@@ -1,30 +1,33 @@
 package com.vitor.cryptotracker.ui.main
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.vitor.cryptotracker.data.models.Cryptocurrency
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.vitor.cryptotracker.data.models.CoinInfoContainer
 import com.vitor.cryptotracker.data.repository.CryptoRepository
 import com.vitor.cryptotracker.utils.Resource
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class MainViewModel : ViewModel() {
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    private val repository: CryptoRepository
+) : ViewModel() {
 
-    private val repository = CryptoRepository()
+    private val _cryptocurrencies = MutableLiveData<Resource<List<CoinInfoContainer>>>()
+    val cryptocurrencies: LiveData<Resource<List<CoinInfoContainer>>> = _cryptocurrencies
 
-    private val _cryptocurrencies = MutableLiveData<Resource<List<Cryptocurrency>>>()
-    val cryptocurrencies: LiveData<Resource<List<Cryptocurrency>>> = _cryptocurrencies
+    init {
+        fetchCryptocurrencies()
+    }
 
-    fun fetchCryptocurrencies(currency: String = "usd") {
-        _cryptocurrencies.value = Resource.loading()
+    fun fetchCryptocurrencies() {
+        _cryptocurrencies.postValue(Resource.Loading())
         viewModelScope.launch {
-            try {
-                val data = repository.getTopCryptocurrencies(currency)
-                _cryptocurrencies.value = Resource.success(data)
-            } catch (e: Exception) {
-                _cryptocurrencies.value = Resource.error("Erro ao buscar criptomoedas: ${e.message}")
-            }
+            val result = repository.getTopCoins()
+            _cryptocurrencies.postValue(result)
         }
     }
 }

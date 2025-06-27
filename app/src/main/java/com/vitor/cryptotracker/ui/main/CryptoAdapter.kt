@@ -1,51 +1,68 @@
 package com.vitor.cryptotracker.ui.main
 
+import android.graphics.Color
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
+import androidx.recyclerview.widget.AsyncListDiffer
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.vitor.cryptotracker.R
-import com.vitor.cryptotracker.data.models.Cryptocurrency
+import com.vitor.cryptotracker.data.models.CoinInfoContainer
+import com.vitor.cryptotracker.databinding.ItemCryptocurrencyBinding
+import com.vitor.cryptotracker.utils.Constants
 
 class CryptoAdapter(
-    private var cryptos: List<Cryptocurrency>,
-    private val onItemClick: (Cryptocurrency) -> Unit // Callback para clique
+    private val onItemClicked: (CoinInfoContainer) -> Unit
 ) : RecyclerView.Adapter<CryptoAdapter.CryptoViewHolder>() {
 
-    inner class CryptoViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val imageCrypto: ImageView = itemView.findViewById(R.id.image_crypto)
-        val textName: TextView = itemView.findViewById(R.id.text_name)
-        val textSymbol: TextView = itemView.findViewById(R.id.text_symbol)
-        val textPrice: TextView = itemView.findViewById(R.id.text_price)
-    }
+    inner class CryptoViewHolder(val binding: ItemCryptocurrencyBinding) : RecyclerView.ViewHolder(binding.root)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CryptoViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_cryptocurrency, parent, false)
-        return CryptoViewHolder(view)
-    }
+    private val differCallback = object : DiffUtil.ItemCallback<CoinInfoContainer>() {
+        override fun areItemsTheSame(oldItem: CoinInfoContainer, newItem: CoinInfoContainer): Boolean {
+            return oldItem.coinInfo.id == newItem.coinInfo.id
+        }
 
-    override fun onBindViewHolder(holder: CryptoViewHolder, position: Int) {
-        val crypto = cryptos[position]
-        holder.textName.text = crypto.name
-        holder.textSymbol.text = crypto.symbol.uppercase()
-        holder.textPrice.text = "US$ ${"%.2f".format(crypto.current_price)}"
-        Glide.with(holder.itemView)
-            .load(crypto.image)
-            .placeholder(R.mipmap.ic_launcher)
-            .into(holder.imageCrypto)
-        holder.itemView.setOnClickListener {
-            onItemClick(crypto) // Chama o callback ao clicar
+        override fun areContentsTheSame(oldItem: CoinInfoContainer, newItem: CoinInfoContainer): Boolean {
+            return oldItem == newItem
         }
     }
 
-    override fun getItemCount(): Int = cryptos.size
+    val differ = AsyncListDiffer(this, differCallback)
 
-    fun updateList(newList: List<Cryptocurrency>) {
-        cryptos = newList
-        notifyDataSetChanged()
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CryptoViewHolder {
+        val binding = ItemCryptocurrencyBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
+        return CryptoViewHolder(binding)
+    }
+
+    override fun getItemCount() = differ.currentList.size
+
+    override fun onBindViewHolder(holder: CryptoViewHolder, position: Int) {
+        val coin = differ.currentList[position]
+        holder.binding.apply {
+            tvCoinFullName.text = coin.coinInfo.fullName
+            tvCoinSymbol.text = coin.coinInfo.name
+            tvPrice.text = coin.display.usd.price
+
+            // Lógica para colorir a porcentagem
+            val changePct = coin.display.usd.changePct24Hour
+            tvChangePct24h.text = "$changePct%"
+            if (changePct.startsWith("-")) {
+                tvChangePct24h.setTextColor(Color.RED)
+            } else {
+                tvChangePct24h.setTextColor(Color.parseColor("#388E3C")) // Verde escuro
+            }
+
+            Glide.with(root)
+                .load(Constants.IMAGE_BASE_URL + coin.coinInfo.imageUrl)
+                .into(ivCoinIcon)
+
+            root.setOnClickListener {
+                onItemClicked(coin)
+            }
+        }
     }
 }

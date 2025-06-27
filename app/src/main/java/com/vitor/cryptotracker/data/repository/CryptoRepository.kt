@@ -1,48 +1,49 @@
 package com.vitor.cryptotracker.data.repository
 
-import com.vitor.cryptotracker.data.api.NetworkModule
-import com.vitor.cryptotracker.data.models.Cryptocurrency
-import com.vitor.cryptotracker.data.models.MarketChart
+import com.vitor.cryptotracker.data.api.CryptoCompareApi
+import com.vitor.cryptotracker.data.models.CoinInfoContainer
 import com.vitor.cryptotracker.data.models.OHLCData
+import com.vitor.cryptotracker.utils.Constants
+import com.vitor.cryptotracker.utils.Resource
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class CryptoRepository {
+@Singleton
+class CryptoRepository @Inject constructor(
+    private val api: CryptoCompareApi
+) {
 
-    private val api = NetworkModule.coinGeckoApi
-
-    // Busca as principais criptomoedas pelo market cap
-    suspend fun getTopCryptocurrencies(
-        currency: String = "usd",
-        perPage: Int = 100,
-        page: Int = 1
-    ): List<Cryptocurrency> {
-        return api.getTopCryptocurrencies(currency = currency, perPage = perPage, page = page)
+    suspend fun getTopCoins(): Resource<List<CoinInfoContainer>> {
+        return try {
+            val response = api.getTopCoins(apiKey = Constants.API_KEY)
+            if (response.isSuccessful) {
+                response.body()?.let {
+                    Resource.Success(it.data)
+                } ?: Resource.Error("Response body is null")
+            } else {
+                Resource.Error("API Error: ${response.message()}")
+            }
+        } catch (e: Exception) {
+            Resource.Error("Exception: ${e.message}")
+        }
     }
 
-    // Busca o histórico de preços para uma moeda específica
-    suspend fun getMarketChart(
-        id: String,
-        currency: String = "usd",
-        days: String = "7"
-    ): MarketChart {
-        return api.getMarketChart(id, currency = currency, days = days)
-    }
-
-    // Busca dados OHLC (Open, High, Low, Close) para uma moeda específica
-    suspend fun getOHLCData(
-        id: String,
-        currency: String = "usd",
-        days: Int = 7
-    ): List<OHLCData> {
-        val rawOhlc = api.getOHLCData(id, currency = currency, days = days)
-        // Converte a lista bruta em uma lista de objetos OHLCData
-        return rawOhlc.map { values ->
-            OHLCData(
-                timestamp = values[0].toLong(),
-                open = values[1],
-                high = values[2],
-                low = values[3],
-                close = values[4]
+    suspend fun getHistoricalData(coinSymbol: String, days: Int): Resource<List<OHLCData>> {
+        return try {
+            val response = api.getHistoricalDayData(
+                fromSymbol = coinSymbol,
+                limit = days,
+                apiKey = Constants.API_KEY
             )
+            if (response.isSuccessful) {
+                response.body()?.data?.dailyData?.let {
+                    Resource.Success(it)
+                } ?: Resource.Error("Response body or data is null")
+            } else {
+                Resource.Error("API Error: ${response.message()}")
+            }
+        } catch (e: Exception) {
+            Resource.Error("Exception: ${e.message}")
         }
     }
 }

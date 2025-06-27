@@ -1,17 +1,55 @@
 package com.vitor.cryptotracker.data.models
 
-data class Cryptocurrency(
-    val id: String,
-    val symbol: String,
-    val name: String,
-    val image: String,
-    val current_price: Double,
-    val market_cap: Long,
-    val market_cap_rank: Int,
-    val price_change_percentage_24h: Double,
-    val circulating_supply: Double?,
-    val total_supply: Double?,
-    val high_24h: Double?,
-    val low_24h: Double?,
-    val last_updated: String
+import android.os.Parcelable
+import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
+
+// Classe principal que encapsula a resposta da API para a lista de moedas
+data class TopCoinsResponse(
+    @SerializedName("Data")
+    val data: List<CoinInfoContainer>
 )
+
+// Container que possui as informações completas da moeda
+@Parcelize
+data class CoinInfoContainer(
+    @SerializedName("CoinInfo")
+    val coinInfo: CoinInfo,
+    @SerializedName("DISPLAY")
+    val display: DisplayData
+) : Parcelable
+
+// Informações básicas da moeda (ID, Nome, Símbolo, Imagem)
+@Parcelize
+data class CoinInfo(
+    @SerializedName("Id")
+    val id: String,
+    @SerializedName("Name")
+    val name: String,
+    @SerializedName("FullName")
+    val fullName: String,
+    @SerializedName("ImageUrl")
+    val imageUrl: String?
+) : Parcelable
+
+// Dados formatados para exibição na UI (preços, etc.)
+@Parcelize
+data class DisplayData(
+    @SerializedName("USD")
+    val usd: UsdDisplayData
+) : Parcelable
+
+// Dados específicos em USD para exibição
+@Parcelize
+data class UsdDisplayData(
+    @SerializedName("PRICE")
+    val price: String,
+    @SerializedName("MKTCAP")
+    val marketCap: String,
+    @SerializedName("SUPPLY")
+    val supply: String,
+    @SerializedName("TOTALVOLUME24H")
+    val totalVolume24h: String,
+    @SerializedName("CHANGEPCT24HOUR")
+    val changePct24Hour: String
+) : Parcelable

@@ -1,14 +1,9 @@
 package com.vitor.cryptotracker.utils
 
 object Constants {
-    const val BASE_URL = "https://api.coingecko.com/api/v3/"
-    const val DATABASE_NAME = "crypto_database"
+    const val BASE_URL = "https://min-api.cryptocompare.com/"
+    const val IMAGE_BASE_URL = "https://www.cryptocompare.com"
 
-    // SharedPreferences
-    const val PREFS_NAME = "crypto_preferences"
-    const val PREF_CURRENCY = "preferred_currency"
-
-    // Default values
-    const val DEFAULT_CURRENCY = "usd"
-    const val CACHE_TIMEOUT = 300000L // 5 minutes
+    // !!! COLOQUE A SUA CHAVE DA API DA CRYPTOCOMPARE AQUI !!!
+    const val API_KEY = "6d2e6dfb80e35db983cc000ad4aa48f7e9e01d997587b15983db19a18f4d65ec"
 }
