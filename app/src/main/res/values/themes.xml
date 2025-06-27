@@ -9,6 +9,7 @@
         <item name="colorSurface">@color/surface</item>
         <item name="colorOnSurface">@color/on_surface</item>
         <item name="android:statusBarColor">@color/surface</item>
+        <item name="android:windowActivityTransitions">true</item>
     </style>
 
     <style name="Theme.App.Starting" parent="Theme.SplashScreen">

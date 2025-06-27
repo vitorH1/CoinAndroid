@@ -1,5 +1,6 @@
 package com.vitor.cryptotracker
 
+import android.app.ActivityOptions
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
@@ -16,6 +17,7 @@ import com.vitor.cryptotracker.ui.main.CryptoAdapter
 import com.vitor.cryptotracker.ui.main.MainViewModel
 import com.vitor.cryptotracker.utils.Resource
 import dagger.hilt.android.AndroidEntryPoint
+import android.util.Pair // IMPORT CORRETO
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -45,12 +47,10 @@ class MainActivity : AppCompatActivity() {
 
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                // Não precisamos fazer nada quando o usuário aperta "Enter"
                 return false
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                // A mágica acontece aqui: chama a ViewModel toda vez que o texto muda
                 viewModel.searchCoin(newText)
                 return true
             }
@@ -66,11 +66,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        cryptoAdapter = CryptoAdapter { coin ->
+        // MUDANÇA AQUI: O lambda agora recebe os 3 parâmetros
+        cryptoAdapter = CryptoAdapter { coin, iconView, nameView ->
             val intent = Intent(this, DetailActivity::class.java).apply {
                 putExtra(DetailActivity.EXTRA_COIN, coin)
+                // Passando os transitionNames únicos para a DetailActivity
+                putExtra(DetailActivity.EXTRA_ICON_TRANSITION_NAME, iconView.transitionName)
+                putExtra(DetailActivity.EXTRA_NAME_TRANSITION_NAME, nameView.transitionName)
             }
-            startActivity(intent)
+
+            // A Mágica da Animação Corrigida
+            val options = ActivityOptions.makeSceneTransitionAnimation(
+                this,
+                Pair.create(iconView, iconView.transitionName),
+                Pair.create(nameView, nameView.transitionName)
+            )
+
+            startActivity(intent, options.toBundle())
         }
         binding.recyclerCryptos.apply {
             adapter = cryptoAdapter
@@ -87,7 +99,7 @@ class MainActivity : AppCompatActivity() {
                 is Resource.Success -> {
                     hideShimmer()
                     binding.swipeRefreshLayout.isRefreshing = false
-                    resource.data?.let { cryptoAdapter.differ.submitList(it) }
+                    resource.data?.let { cryptoAdapter.differ.submitList(it.toList()) }
                 }
                 is Resource.Error -> {
                     hideShimmer()
@@ -99,7 +111,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showShimmer() {
-        // Apenas mostra o shimmer se a lista estiver vazia (carregamento inicial)
         if (cryptoAdapter.differ.currentList.isEmpty()) {
             binding.shimmerLayout.apply {
                 startShimmer()

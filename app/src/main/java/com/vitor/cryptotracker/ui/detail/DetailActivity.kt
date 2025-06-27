@@ -33,12 +33,20 @@ class DetailActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_COIN = "extra_coin"
+        const val EXTRA_ICON_TRANSITION_NAME = "extra_icon_transition"
+        const val EXTRA_NAME_TRANSITION_NAME = "extra_name_transition"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        val iconTransitionName = intent.getStringExtra(EXTRA_ICON_TRANSITION_NAME)
+        val nameTransitionName = intent.getStringExtra(EXTRA_NAME_TRANSITION_NAME)
+
+        // Aplica os nomes às views desta tela
+        binding.toolbarCoinIcon.transitionName = iconTransitionName
+        binding.toolbarCoinName.transitionName = nameTransitionName
 
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -68,11 +76,31 @@ class DetailActivity : AppCompatActivity() {
 
     private fun setupUI() {
         coin?.let {
-            supportActionBar?.title = "${it.coinInfo.fullName} (${it.coinInfo.name})"
+            supportActionBar?.title = it.coinInfo.fullName
+
+            // Dados da Toolbar e Preço principal
+            binding.toolbarCoinName.text = it.coinInfo.name
+            Glide.with(this)
+                .load(Constants.IMAGE_BASE_URL + it.coinInfo.imageUrl)
+                .into(binding.toolbarCoinIcon)
             binding.tvDetailPrice.text = it.display.usd.price
-            binding.tvMarketCap.text = "Capitalização de Mercado: ${it.display.usd.marketCap}"
-            binding.tvVolume24h.text = "Volume (24h): ${it.display.usd.totalVolume24h}"
-            binding.tvSupply.text = "Fornecimento em Circulação: ${it.display.usd.supply}"
+
+            // Lógica para o novo campo de Variação 24h
+            val change24h = it.display.usd.change24Hour
+            val changePct = it.display.usd.changePct24Hour
+            binding.tvPriceChange24h.text = String.format("%s (%s%%)", change24h, changePct)
+
+            // Lógica para colorir o texto de variação
+            if (change24h.contains("-")) {
+                binding.tvPriceChange24h.setTextColor(ContextCompat.getColor(this, R.color.text_negative))
+            } else {
+                binding.tvPriceChange24h.setTextColor(ContextCompat.getColor(this, R.color.text_positive))
+            }
+
+            // Popula o novo Card de Estatísticas
+            binding.tvMarketCapValue.text = it.display.usd.marketCap
+            binding.tvVolume24hValue.text = it.display.usd.totalVolume24h
+            binding.tvSupplyValue.text = it.display.usd.supply
         }
     }
 

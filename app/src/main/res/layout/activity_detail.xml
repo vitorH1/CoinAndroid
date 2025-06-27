@@ -17,7 +17,24 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:navigationIcon="@drawable/ic_arrow_back"
-            app:titleTextColor="@color/on_surface" />
+            app:titleTextColor="@color/on_surface">
+
+            <ImageView
+                android:id="@+id/toolbar_coin_icon"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginEnd="16dp"/>
+
+            <TextView
+                android:id="@+id/toolbar_coin_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/on_surface"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                tools:text="Bitcoin"/>
+
+        </com.google.android.material.appbar.MaterialToolbar>
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -52,7 +69,16 @@
                         android:textColor="@color/on_surface"
                         android:textSize="32sp"
                         android:textStyle="bold"
-                        tools:text="$68,123.45" />
+                        tools:text="$106,764.5" />
+
+                    <TextView
+                        android:id="@+id/tvPriceChange24h"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        tools:text="+ $2,123.55 (+1.98%)"
+                        tools:textColor="@color/text_positive" />
 
                     <com.google.android.material.button.MaterialButtonToggleGroup
                         android:id="@+id/toggleGroupPeriod"
@@ -87,11 +113,11 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Estatísticas"
+                android:layout_marginTop="24dp"
+                android:text="Estatísticas de Mercado"
                 android:textColor="@color/on_surface"
                 android:textSize="20sp"
-                android:textStyle="bold"
-                android:layout_marginTop="24dp"/>
+                android:textStyle="bold" />
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
@@ -107,9 +133,95 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-                    <TextView android:id="@+id/tvMarketCap" android:layout_width="match_parent" android:layout_height="wrap_content" tools:text="Capitalização de Mercado: $1.3T" android:textColor="@color/on_surface_variant"/>
-                    <TextView android:id="@+id/tvVolume24h" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" tools:text="Volume (24h): $25.5B" android:textColor="@color/on_surface_variant"/>
-                    <TextView android:id="@+id/tvSupply" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" tools:text="Fornecimento: 19.7M" android:textColor="@color/on_surface_variant"/>
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/tvMarketCapLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Capitalização de Mercado"
+                            android:textColor="@color/on_surface_variant"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/tvMarketCapValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/on_surface"
+                            android:textStyle="bold"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            tools:text="$1.32 T" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="12dp"
+                        android:background="@color/background" />
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/tvVolume24hLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Volume (24h)"
+                            android:textColor="@color/on_surface_variant"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/tvVolume24hValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/on_surface"
+                            android:textStyle="bold"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            tools:text="$25.5 B" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="12dp"
+                        android:background="@color/background" />
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:id="@+id/tvSupplyLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Fornecimento em Circulação"
+                            android:textColor="@color/on_surface_variant"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:id="@+id/tvSupplyValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/on_surface"
+                            android:textStyle="bold"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            tools:text="19.7 M BTC" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
 
                 </LinearLayout>
 

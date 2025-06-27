@@ -51,5 +51,8 @@ data class UsdDisplayData(
     @SerializedName("TOTALVOLUME24H")
     val totalVolume24h: String,
     @SerializedName("CHANGEPCT24HOUR")
-    val changePct24Hour: String
+    val changePct24Hour: String,
+    @SerializedName("CHANGE24HOUR")
+    val change24Hour: String
+
 ) : Parcelable
