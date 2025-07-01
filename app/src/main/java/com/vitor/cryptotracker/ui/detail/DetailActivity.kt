@@ -15,7 +15,6 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.vitor.cryptotracker.R
-import com.vitor.cryptotracker.data.models.CoinInfoContainer
 import com.vitor.cryptotracker.data.models.OHLCData
 import com.vitor.cryptotracker.databinding.ActivityDetailBinding
 import com.vitor.cryptotracker.utils.Constants
@@ -29,10 +28,18 @@ class DetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityDetailBinding
     private val viewModel: DetailViewModel by viewModels()
-    private var coin: CoinInfoContainer? = null
 
     companion object {
-        const val EXTRA_COIN = "extra_coin"
+        // Nomes das chaves para os extras do Intent
+        const val EXTRA_COIN_SYMBOL = "extra_coin_symbol"
+        const val EXTRA_COIN_FULL_NAME = "extra_coin_full_name"
+        const val EXTRA_COIN_PRICE = "extra_coin_price"
+        const val EXTRA_COIN_IMAGE_URL = "extra_coin_image_url"
+        const val EXTRA_COIN_CHANGE_PCT = "extra_coin_change_pct"
+        const val EXTRA_COIN_MKTCAP = "extra_coin_mktcap"
+        const val EXTRA_COIN_SUPPLY = "extra_coin_supply"
+        const val EXTRA_COIN_VOLUME = "extra_coin_volume"
+
         const val EXTRA_ICON_TRANSITION_NAME = "extra_icon_transition"
         const val EXTRA_NAME_TRANSITION_NAME = "extra_name_transition"
     }
@@ -41,6 +48,22 @@ class DetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        binding.toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
+
+        // Pega os dados do Intent
+        val coinSymbol = intent.getStringExtra(EXTRA_COIN_SYMBOL)
+        val coinFullName = intent.getStringExtra(EXTRA_COIN_FULL_NAME)
+        val coinPrice = intent.getStringExtra(EXTRA_COIN_PRICE)
+        val coinImageUrl = intent.getStringExtra(EXTRA_COIN_IMAGE_URL)
+        val coinMktcap = intent.getStringExtra(EXTRA_COIN_MKTCAP)
+        val coinVolume = intent.getStringExtra(EXTRA_COIN_VOLUME)
+        val coinSupply = intent.getStringExtra(EXTRA_COIN_SUPPLY)
+        val coinChangePct = intent.getStringExtra(EXTRA_COIN_CHANGE_PCT)
+
+        // Pega os nomes da transição passados pelo Intent
         val iconTransitionName = intent.getStringExtra(EXTRA_ICON_TRANSITION_NAME)
         val nameTransitionName = intent.getStringExtra(EXTRA_NAME_TRANSITION_NAME)
 
@@ -48,63 +71,47 @@ class DetailActivity : AppCompatActivity() {
         binding.toolbarCoinIcon.transitionName = iconTransitionName
         binding.toolbarCoinName.transitionName = nameTransitionName
 
-        setSupportActionBar(binding.toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        binding.toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
-
-
-        coin = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableExtra(EXTRA_COIN, CoinInfoContainer::class.java)
-        } else {
-            @Suppress("DEPRECATION")
-            intent.getParcelableExtra(EXTRA_COIN)
-        }
-
-
-        if (coin == null) {
+        if (coinSymbol == null) {
             Toast.makeText(this, "Erro: Moeda não encontrada", Toast.LENGTH_LONG).show()
             finish()
             return
         }
 
-        setupUI()
-        setupChartPeriodSelector()
+        // Passa os dados recebidos para a UI
+        setupUI(coinFullName, coinSymbol, coinPrice, coinMktcap, coinVolume, coinSupply, coinImageUrl, coinChangePct)
+        setupChartPeriodSelector(coinSymbol) // Passando o símbolo aqui
         setupObservers()
 
         binding.toggleGroupPeriod.check(R.id.btn30d)
     }
 
-    private fun setupUI() {
-        coin?.let {
-            supportActionBar?.title = it.coinInfo.fullName
+    private fun setupUI(fullName: String?, symbol: String?, price: String?, mktcap: String?, volume: String?, supply: String?, imageUrl: String?, changePct: String?) {
+        supportActionBar?.title = ""
 
-            // Dados da Toolbar e Preço principal
-            binding.toolbarCoinName.text = it.coinInfo.name
-            Glide.with(this)
-                .load(Constants.IMAGE_BASE_URL + it.coinInfo.imageUrl)
-                .into(binding.toolbarCoinIcon)
-            binding.tvDetailPrice.text = it.display.usd.price
+        binding.toolbarCoinName.text = fullName
+        Glide.with(this)
+            .load(Constants.IMAGE_BASE_URL + imageUrl)
+            .into(binding.toolbarCoinIcon)
 
-            // Lógica para o novo campo de Variação 24h
-            val change24h = it.display.usd.change24Hour
-            val changePct = it.display.usd.changePct24Hour
-            binding.tvPriceChange24h.text = String.format("%s (%s%%)", change24h, changePct)
+        binding.tvDetailPrice.text = price
 
-            // Lógica para colorir o texto de variação
-            if (change24h.contains("-")) {
-                binding.tvPriceChange24h.setTextColor(ContextCompat.getColor(this, R.color.text_negative))
-            } else {
-                binding.tvPriceChange24h.setTextColor(ContextCompat.getColor(this, R.color.text_positive))
-            }
-
-            // Popula o novo Card de Estatísticas
-            binding.tvMarketCapValue.text = it.display.usd.marketCap
-            binding.tvVolume24hValue.text = it.display.usd.totalVolume24h
-            binding.tvSupplyValue.text = it.display.usd.supply
+        // Lógica para o campo de Variação 24h
+        val changeText = changePct ?: "0.0"
+        if (changeText.contains("-")) {
+            binding.tvPriceChange24h.text = String.format("%s%%", changeText)
+            binding.tvPriceChange24h.setTextColor(ContextCompat.getColor(this, R.color.text_negative))
+        } else {
+            binding.tvPriceChange24h.text = String.format("+%s%%", changeText)
+            binding.tvPriceChange24h.setTextColor(ContextCompat.getColor(this, R.color.text_positive))
         }
+
+        binding.tvMarketCapValue.text = mktcap
+        binding.tvVolume24hValue.text = volume
+        binding.tvSupplyValue.text = supply
     }
 
-    private fun setupChartPeriodSelector() {
+    // Esta é a função que estava faltando
+    private fun setupChartPeriodSelector(coinSymbol: String) {
         binding.toggleGroupPeriod.addOnButtonCheckedListener { group, checkedId, isChecked ->
             if (isChecked) {
                 val days = when (checkedId) {
@@ -113,15 +120,13 @@ class DetailActivity : AppCompatActivity() {
                     R.id.btn90d -> 90
                     else -> 30
                 }
-                fetchChartData(days)
+                fetchChartData(coinSymbol, days)
             }
         }
     }
 
-    private fun fetchChartData(days: Int) {
-        coin?.coinInfo?.name?.let { symbol ->
-            viewModel.fetchHistoricalData(symbol, days)
-        }
+    private fun fetchChartData(symbol: String, days: Int) {
+        viewModel.fetchHistoricalData(symbol, days)
     }
 
     private fun setupObservers() {
@@ -135,8 +140,10 @@ class DetailActivity : AppCompatActivity() {
                     binding.detailProgressBar.visibility = View.GONE
                     binding.lineChart.visibility = View.VISIBLE
                     resource.data?.let {
-                        setupChart(it)
-                        binding.lineChart.marker = ChartMarkerView(this, it)
+                        if (it.isNotEmpty()) {
+                            setupChart(it)
+                            binding.lineChart.marker = ChartMarkerView(this, it)
+                        }
                     }
                 }
                 is Resource.Error -> {
@@ -185,9 +192,7 @@ class DetailActivity : AppCompatActivity() {
                 gridColor = ContextCompat.getColor(this@DetailActivity, R.color.surface)
                 setDrawAxisLine(false)
 
-                // ******** A CORREÇÃO ESTÁ AQUI *********
                 valueFormatter = object : ValueFormatter() {
-                    // O método correto é 'getFormattedValue' e ele só precisa do 'value'
                     override fun getFormattedValue(value: Float): String {
                         val index = value.toInt()
                         return if (index >= 0 && index < ohlcData.size) {

@@ -1,12 +1,11 @@
 package com.vitor.cryptotracker.ui.main
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.vitor.cryptotracker.data.models.CoinInfoContainer
+import com.vitor.cryptotracker.data.models.CoinEntity
 import com.vitor.cryptotracker.data.repository.CryptoRepository
-import com.vitor.cryptotracker.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -16,45 +15,51 @@ class MainViewModel @Inject constructor(
     private val repository: CryptoRepository
 ) : ViewModel() {
 
-    private val _cryptocurrencies = MutableLiveData<Resource<List<CoinInfoContainer>>>()
-    val cryptocurrencies: LiveData<Resource<List<CoinInfoContainer>>> = _cryptocurrencies
+    // Fonte de dados principal, vinda do banco de dados
+    private val allCoinsFromDb = repository.allCoins
 
-    // Variável para guardar a lista completa e original
-    private var originalCoinList = listOf<CoinInfoContainer>()
+    // LiveData que a UI irá observar. Ele "escuta" a fonte de dados principal
+    // e também pode ser modificado pela lógica de pesquisa.
+    private val _cryptocurrencies = MediatorLiveData<List<CoinEntity>>()
+    val cryptocurrencies: LiveData<List<CoinEntity>> = _cryptocurrencies
+
+    private var currentQuery: String? = null
 
     init {
+        // Conecta o LiveData da UI com a fonte de dados do banco
+        _cryptocurrencies.addSource(allCoinsFromDb) { originalList ->
+            // Toda vez que o banco de dados muda, nós aplicamos o filtro atual
+            applyFilter(currentQuery, originalList)
+        }
+
+        // Busca dados frescos da rede ao iniciar
         fetchCryptocurrencies()
     }
 
+    // Renomeado de volta para corresponder ao que a MainActivity chama
     fun fetchCryptocurrencies() {
-        _cryptocurrencies.postValue(Resource.Loading())
         viewModelScope.launch {
-            when (val result = repository.getTopCoins()) {
-                is Resource.Success -> {
-                    // Quando o resultado for sucesso, guardamos a lista original
-                    originalCoinList = result.data ?: emptyList()
-                    _cryptocurrencies.postValue(result)
-                }
-                else -> {
-                    _cryptocurrencies.postValue(result)
-                }
-            }
+            repository.refreshCoins()
         }
     }
 
-    // Nova função para pesquisar
+    // Função de pesquisa que a MainActivity vai chamar
     fun searchCoin(query: String?) {
-        if (query.isNullOrBlank()) {
-            // Se a pesquisa estiver vazia, mostra a lista original
-            _cryptocurrencies.postValue(Resource.Success(originalCoinList))
-            return
-        }
+        currentQuery = query
+        applyFilter(query, allCoinsFromDb.value)
+    }
 
-        // Filtra a lista original pelo nome ou símbolo da moeda
-        val filteredList = originalCoinList.filter { coinContainer ->
-            coinContainer.coinInfo.fullName.contains(query, ignoreCase = true) ||
-                    coinContainer.coinInfo.name.contains(query, ignoreCase = true)
+    private fun applyFilter(query: String?, originalList: List<CoinEntity>?) {
+        if (originalList == null) return
+
+        val filteredList = if (query.isNullOrBlank()) {
+            originalList
+        } else {
+            originalList.filter { coin ->
+                coin.fullName.contains(query, ignoreCase = true) ||
+                        coin.symbol.contains(query, ignoreCase = true)
+            }
         }
-        _cryptocurrencies.postValue(Resource.Success(filteredList))
+        _cryptocurrencies.postValue(filteredList)
     }
 }

@@ -16,7 +16,7 @@ data class CoinInfoContainer(
     @SerializedName("CoinInfo")
     val coinInfo: CoinInfo,
     @SerializedName("DISPLAY")
-    val display: DisplayData
+    val display: DisplayData?
 ) : Parcelable
 
 // Informações básicas da moeda (ID, Nome, Símbolo, Imagem)

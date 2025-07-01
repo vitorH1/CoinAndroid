@@ -8,23 +8,23 @@ import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.vitor.cryptotracker.data.models.CoinInfoContainer
+import com.vitor.cryptotracker.data.models.CoinEntity
 import com.vitor.cryptotracker.databinding.ItemCryptocurrencyBinding
 import com.vitor.cryptotracker.utils.Constants
 
+// A assinatura do clique agora passa a CoinEntity e as views
 class CryptoAdapter(
-    // MUDANÇA AQUI: O lambda agora passa o objeto e as duas views da animação
-    private val onItemClicked: (coin: CoinInfoContainer, iconView: View, nameView: View) -> Unit
+    private val onItemClicked: (coin: CoinEntity, iconView: View, nameView: View) -> Unit
 ) : RecyclerView.Adapter<CryptoAdapter.CryptoViewHolder>() {
 
     inner class CryptoViewHolder(val binding: ItemCryptocurrencyBinding) : RecyclerView.ViewHolder(binding.root)
 
-    private val differCallback = object : DiffUtil.ItemCallback<CoinInfoContainer>() {
-        override fun areItemsTheSame(oldItem: CoinInfoContainer, newItem: CoinInfoContainer): Boolean {
-            return oldItem.coinInfo.id == newItem.coinInfo.id
+    private val differCallback = object : DiffUtil.ItemCallback<CoinEntity>() {
+        override fun areItemsTheSame(oldItem: CoinEntity, newItem: CoinEntity): Boolean {
+            return oldItem.id == newItem.id
         }
 
-        override fun areContentsTheSame(oldItem: CoinInfoContainer, newItem: CoinInfoContainer): Boolean {
+        override fun areContentsTheSame(oldItem: CoinEntity, newItem: CoinEntity): Boolean {
             return oldItem == newItem
         }
     }
@@ -45,15 +45,14 @@ class CryptoAdapter(
     override fun onBindViewHolder(holder: CryptoViewHolder, position: Int) {
         val coin = differ.currentList[position]
         holder.binding.apply {
-            // Adicionando os transitionNames aqui, direto no código
-            ivCoinIcon.transitionName = "transition_icon_${coin.coinInfo.id}"
-            tvCoinFullName.transitionName = "transition_name_${coin.coinInfo.id}"
+            ivCoinIcon.transitionName = "transition_icon_${coin.id}"
+            tvCoinFullName.transitionName = "transition_name_${coin.id}"
 
-            tvCoinFullName.text = coin.coinInfo.fullName
-            tvCoinSymbol.text = coin.coinInfo.name
-            tvPrice.text = coin.display.usd.price
+            tvCoinFullName.text = coin.fullName
+            tvCoinSymbol.text = coin.symbol
+            tvPrice.text = coin.price
 
-            val changePct = coin.display.usd.changePct24Hour
+            val changePct = coin.changePct24Hour
             tvChangePct24h.text = "$changePct%"
             if (changePct.startsWith("-")) {
                 tvChangePct24h.setTextColor(Color.parseColor("#F44336"))
@@ -62,11 +61,10 @@ class CryptoAdapter(
             }
 
             Glide.with(root)
-                .load(Constants.IMAGE_BASE_URL + coin.coinInfo.imageUrl)
+                .load(Constants.IMAGE_BASE_URL + coin.imageUrl)
                 .into(ivCoinIcon)
 
             root.setOnClickListener {
-                // MUDANÇA AQUI: Passando as views junto com o objeto
                 onItemClicked(coin, ivCoinIcon, tvCoinFullName)
             }
         }
