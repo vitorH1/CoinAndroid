@@ -31,18 +31,6 @@ Construído com uma arquitetura robusta e as tecnologias mais recentes do ecossi
     * Uso de um banco de dados local **Room** para cache de dados.
     * O app abre instantaneamente e exibe os dados mais recentes, mesmo sem conexão com a internet, seguindo o padrão de "Fonte Única da Verdade".
 
-##  captures de tela
-
-**(Instrução para você, Vitor: Tire screenshots do seu app e substitua os links abaixo. Você pode subir as imagens na aba "Issues" do seu repositório para gerar links, ou usar um site como o [Imgur](https://imgur.com/)).**
-
-| Splash Screen | Tela Principal | Pesquisa |
-| :---: | :---: | :---: |
-| ![Splash Screen](https://i.imgur.com/image_link_here.png) | ![Tela Principal](https://i.imgur.com/image_link_here.png) | ![Pesquisa](https://i.imgur.com/image_link_here.png) |
-
-| Tela de Detalhes | Gráfico Interativo |
-| :---: | :---: |
-| ![Tela de Detalhes](https://i.imgur.com/image_link_here.png) | ![Gráfico Interativo](https://i.imgur.com/image_link_here.png) |
-
 ## 🛠️ Decisões Técnicas e Arquitetura
 
 Este projeto foi desenvolvido com foco em boas práticas e tecnologias modernas do ecossistema Android.
